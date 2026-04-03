@@ -1,17 +1,17 @@
-CC= g++
-CFLAGS= -std=c++17 -Wall -Wextra
+CC = g++
+CFLAGS = -std=c++17 -Wall -Wextra -I/usr/include/SDL3
+LDFLAGS = -lSDL3
 
-SRC= *.cpp
-OUT=FrictionSim
+SRC = *.cpp
+OUT = ForceFlowFrictionSim
 
-all: build 
+all: build
 
 build:
-	$(CC) $(SRC) -o $(OUT) $(CFLAGS)
+	$(CC) $(SRC) -o $(OUT) $(CFLAGS) $(LDFLAGS)
 
 clean:
-	rm $(OUT)
+	rm -f $(OUT)
 
 run:
 	clear && ./$(OUT)
-	
