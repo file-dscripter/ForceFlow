@@ -10,7 +10,7 @@ struct square {
     float squareXPos; 
     float squareYPos; 
     float squareMass; 
-    float squareVelocity;
+    float forceApplied;
 };
 
 struct square sq;
@@ -19,10 +19,13 @@ SDL_Window* createWindow(void);
 SDL_Renderer* createRenderer(SDL_Window* window);
 
 void renderBackground(SDL_Renderer* renderer);
-void renderSquare(SDL_Renderer* renderer, float enteredHeight);
+void renderSurface(SDL_Renderer* renderer);
+void renderSquare(SDL_Renderer* renderer);
 
 int main(void) 
 {
+
+
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_Window* win = createWindow();
@@ -32,9 +35,13 @@ int main(void)
     SDL_Event event;
 
     while (isRunning) {
+        // float deltaTime = 1.0f / 60.0f;
+
         renderBackground(renderer);
 
-        renderSquare(renderer, 50.0f);
+        renderSurface(renderer);
+
+        renderSquare(renderer);
 
         SDL_RenderPresent(renderer);
 
@@ -64,17 +71,29 @@ void renderBackground(SDL_Renderer* renderer) {
     SDL_RenderClear(renderer);
 }
 
-void renderSquare(SDL_Renderer* renderer, float enteredHeight) {
+void renderSurface(SDL_Renderer* renderer) {
+    SDL_SetRenderDrawColor(renderer, 125, 125, 125, 255);
+    SDL_FRect surface;
+    surface.x = 0;
+    surface.y = SURFACE_YPOS;
+
+    surface.w = SURFACE_WIDTH;
+    surface.h = SURFACE_HEIGHT;
+
+    SDL_RenderFillRect(renderer, &surface);
+}
+
+void renderSquare(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
-    SDL_FRect s;
-    s.x = (WIDTH/2) - 50; 
-    sq.squareXPos = s.x;
+    SDL_FRect block;
+    block.x = SQUARE_XPOS; 
+    sq.squareXPos = block.x;
 
-    s.y = (HEIGHT/2)-enteredHeight;
-    sq.squareYPos = s.y;
+    block.y = (SURFACE_YPOS - SQUARE_HEIGHT);
+    sq.squareYPos = block.y;
 
-    s.w = SQUARE_WIDTH;
-    s.h = SQUARE_HEIGHT;
+    block.w = SQUARE_WIDTH;
+    block.h = SQUARE_HEIGHT;
 
-    SDL_RenderFillRect(renderer, &s);
+    SDL_RenderFillRect(renderer, &block);
 }
