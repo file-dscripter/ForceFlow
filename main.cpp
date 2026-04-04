@@ -1,13 +1,25 @@
 #include <iostream>
 #include <cmath>
+#include <vector>
+
 #include <SDL3/SDL.h>
 
 #include "constants.h"
+
+struct square {
+    float squareXPos; 
+    float squareYPos; 
+    float squareMass; 
+    float squareVelocity;
+};
+
+struct square sq;
 
 SDL_Window* createWindow(void);
 SDL_Renderer* createRenderer(SDL_Window* window);
 
 void renderBackground(SDL_Renderer* renderer);
+void renderSquare(SDL_Renderer* renderer, float enteredHeight);
 
 int main(void) 
 {
@@ -21,6 +33,10 @@ int main(void)
 
     while (isRunning) {
         renderBackground(renderer);
+
+        renderSquare(renderer, 50.0f);
+
+        SDL_RenderPresent(renderer);
 
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) {
@@ -46,5 +62,19 @@ SDL_Renderer* createRenderer(SDL_Window* window) {
 void renderBackground(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 175, 175, 175, 255);
     SDL_RenderClear(renderer);
-    SDL_RenderPresent(renderer);
+}
+
+void renderSquare(SDL_Renderer* renderer, float enteredHeight) {
+    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+    SDL_FRect s;
+    s.x = (WIDTH/2) - 50; 
+    sq.squareXPos = s.x;
+
+    s.y = (HEIGHT/2)-enteredHeight;
+    sq.squareYPos = s.y;
+
+    s.w = SQUARE_WIDTH;
+    s.h = SQUARE_HEIGHT;
+
+    SDL_RenderFillRect(renderer, &s);
 }
