@@ -22,13 +22,17 @@ void renderBackground(SDL_Renderer* renderer);
 void renderSurface(SDL_Renderer* renderer);
 void renderSquare(SDL_Renderer* renderer, float xPosition);
 
-double calculateAcceleration(float forceApplied, double mu, float squareMass, float gravitationalForce);
+double calculateAcceleration(float forceApplied, double mu, float squareMass, float squareVelocity, float gravitationalForce);
 
 int main(void) 
 {
     // square mass
-    std::cout << "Enter mass: ";
+    std::cout << "Enter mass (Kg): ";
     std::cin >> sq.squareMass;
+    while (sq.squareMass < 0) {
+        std::cout << "Enter mass (Kg): ";
+        std::cin >> sq.squareMass;
+    }
 
     // force applied to square
     std::cout << "Enter force applied to block (N): ";
@@ -38,6 +42,10 @@ int main(void)
     double mu;
     std::cout << "Enter mu value (0-1): ";
     std::cin >> mu;
+    while (mu < 0 || mu > 1) {
+        std::cout << "Enter mu value (0-1): ";
+        std::cin >> mu;
+    }
 
     sq.squareVelocity = 0.0f;
     sq.squareXPos = SQUARE_XPOS;
@@ -52,17 +60,34 @@ int main(void)
 
     while (isRunning) {
         float deltaTime = 1.0f / 60.0f;
+        double acceleration;
+
+        if (sq.squareVelocity > 0) {
+            sq.forceApplied = 0;
+        }
+
+        double maxFriction = mu * (sq.squareMass * GRAVITATIONAL_FORCE);
+        if (fabs(sq.forceApplied) <= maxFriction && sq.squareVelocity == 0) {
+            acceleration = 0;
+        } else {
+            acceleration = calculateAcceleration(sq.forceApplied, mu, sq.squareMass, sq.squareVelocity, GRAVITATIONAL_FORCE);
+        }
+
+        if (sq.squareVelocity > 0 && acceleration < 0) {
+            if (sq.squareVelocity + acceleration * deltaTime < 0) {
+                sq.squareVelocity = 0;
+                acceleration = 0;
+            }
+        }
+
+        sq.squareVelocity += acceleration * deltaTime;
+        sq.squareXPos += sq.squareVelocity * deltaTime;
 
         renderBackground(renderer);
 
         renderSurface(renderer);
 
         renderSquare(renderer, sq.squareXPos);
-
-        double acceleration = calculateAcceleration(sq.forceApplied, mu, sq.squareMass, GRAVITATIONAL_FORCE);
-
-        sq.squareVelocity += acceleration * deltaTime;
-        sq.squareXPos += sq.squareVelocity * deltaTime;
 
         SDL_RenderPresent(renderer);
 
@@ -107,8 +132,7 @@ void renderSurface(SDL_Renderer* renderer) {
 void renderSquare(SDL_Renderer* renderer, float xPosition) {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_FRect block;
-    block.x = xPosition; 
-    sq.squareXPos = block.x;
+    block.x = xPosition;
 
     block.y = (SURFACE_YPOS - SQUARE_HEIGHT);
     sq.squareYPos = block.y;
@@ -119,7 +143,19 @@ void renderSquare(SDL_Renderer* renderer, float xPosition) {
     SDL_RenderFillRect(renderer, &block);
 }
 
-double calculateAcceleration(float forceApplied, double mu, float squareMass, float gravitationalForce) {
-    double acceleration = (forceApplied - (mu * squareMass * gravitationalForce)) / squareMass;
+double calculateAcceleration(float forceApplied, double mu, float squareMass, float squareVelocity, float gravitationalForce) {
+    double friction = mu * squareMass * gravitationalForce;
+
+    if (squareVelocity > 0) {
+        friction = -friction;
+    } else if (squareVelocity < 0) {
+        friction = friction;
+    } else {
+        friction = (forceApplied > 0) ? -friction : friction;
+    }
+
+    double netForce = forceApplied + friction;
+    double acceleration = netForce / squareMass;
+
     return acceleration;
 }
