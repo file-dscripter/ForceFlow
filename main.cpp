@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cmath>
-#include <vector>
 
 #include <SDL3/SDL.h>
 
@@ -11,6 +10,7 @@ struct square {
     float squareYPos; 
     float squareMass; 
     float forceApplied;
+    float squareVelocity;
 };
 
 struct square sq;
@@ -20,11 +20,27 @@ SDL_Renderer* createRenderer(SDL_Window* window);
 
 void renderBackground(SDL_Renderer* renderer);
 void renderSurface(SDL_Renderer* renderer);
-void renderSquare(SDL_Renderer* renderer);
+void renderSquare(SDL_Renderer* renderer, float xPosition);
+
+double calculateAcceleration(float forceApplied, double mu, float squareMass, float gravitationalForce);
 
 int main(void) 
 {
+    // square mass
+    std::cout << "Enter mass: ";
+    std::cin >> sq.squareMass;
 
+    // force applied to square
+    std::cout << "Enter force applied to block (N): ";
+    std::cin >> sq.forceApplied;
+
+    // mu value
+    double mu;
+    std::cout << "Enter mu value (0-1): ";
+    std::cin >> mu;
+
+    sq.squareVelocity = 0.0f;
+    sq.squareXPos = SQUARE_XPOS;
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -35,13 +51,18 @@ int main(void)
     SDL_Event event;
 
     while (isRunning) {
-        // float deltaTime = 1.0f / 60.0f;
+        float deltaTime = 1.0f / 60.0f;
 
         renderBackground(renderer);
 
         renderSurface(renderer);
 
-        renderSquare(renderer);
+        renderSquare(renderer, sq.squareXPos);
+
+        double acceleration = calculateAcceleration(sq.forceApplied, mu, sq.squareMass, GRAVITATIONAL_FORCE);
+
+        sq.squareVelocity += acceleration * deltaTime;
+        sq.squareXPos += sq.squareVelocity * deltaTime;
 
         SDL_RenderPresent(renderer);
 
@@ -83,10 +104,10 @@ void renderSurface(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &surface);
 }
 
-void renderSquare(SDL_Renderer* renderer) {
+void renderSquare(SDL_Renderer* renderer, float xPosition) {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_FRect block;
-    block.x = SQUARE_XPOS; 
+    block.x = xPosition; 
     sq.squareXPos = block.x;
 
     block.y = (SURFACE_YPOS - SQUARE_HEIGHT);
@@ -96,4 +117,9 @@ void renderSquare(SDL_Renderer* renderer) {
     block.h = SQUARE_HEIGHT;
 
     SDL_RenderFillRect(renderer, &block);
+}
+
+double calculateAcceleration(float forceApplied, double mu, float squareMass, float gravitationalForce) {
+    double acceleration = (forceApplied - (mu * squareMass * gravitationalForce)) / squareMass;
+    return acceleration;
 }
