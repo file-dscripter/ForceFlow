@@ -132,7 +132,7 @@ void renderSurface(SDL_Renderer* renderer) {
 void renderSquare(SDL_Renderer* renderer, float xPosition) {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_FRect block;
-    block.x = xPosition;
+    block.x = xPosition * PIXELS_PER_METER;
 
     block.y = (SURFACE_YPOS - SQUARE_HEIGHT);
     sq.squareYPos = block.y;

@@ -4,12 +4,12 @@
 #define TITLE "ForceFlow"
 #define WIDTH 1000.0f
 #define HEIGHT 500.0f
+#define PIXELS_PER_METER WIDTH/50
 
 // square constants
 #define SQUARE_WIDTH 75.0f
 #define SQUARE_HEIGHT 75.0f
-#define SQUARE_XPOS 50.0f
-
+#define SQUARE_XPOS 1.0f
 
 // surface constants
 #define SURFACE_WIDTH WIDTH
