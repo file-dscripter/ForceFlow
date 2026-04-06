@@ -18,6 +18,7 @@
 
 // environment constants
 #define GRAVITATIONAL_FORCE 9.81f
+#define FORCE_DURATION 0.2f
 
 
 

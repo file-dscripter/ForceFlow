@@ -2,13 +2,14 @@
 #include <cmath>
 
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "constants.h"
 
 struct square {
-    float squareXPos; 
-    float squareYPos; 
-    float squareMass; 
+    float squareXPos;
+    float squareYPos;
+    float squareMass;
     float forceApplied;
     float squareVelocity;
 };
@@ -22,7 +23,13 @@ void renderBackground(SDL_Renderer* renderer);
 void renderSurface(SDL_Renderer* renderer);
 void renderSquare(SDL_Renderer* renderer, float xPosition);
 
-double calculateAcceleration(float forceApplied, double mu, float squareMass, float squareVelocity, float gravitationalForce);
+double calculateAcceleration(float forceApplied, float squareMass, float squareVelocity, float frictionMax);
+float calculateDisplacement(float xPosition);
+double calculateFrictionMax(double mu, float squareMass, float gravitationalForce);
+
+void renderAccelerationText(SDL_Renderer* renderer, double acceleration);
+void renderVelocityText(SDL_Renderer* renderer, float velocity);
+void renderDisplacementText(SDL_Renderer* renderer, float displacement);
 
 int main(void) 
 {
@@ -34,10 +41,6 @@ int main(void)
         std::cin >> sq.squareMass;
     }
 
-    // force applied to square
-    std::cout << "Enter force applied to block (N): ";
-    std::cin >> sq.forceApplied;
-
     // mu value
     double mu;
     std::cout << "Enter mu value (0-1): ";
@@ -46,6 +49,16 @@ int main(void)
         std::cout << "Enter mu value (0-1): ";
         std::cin >> mu;
     }
+
+    float frictionMax = calculateFrictionMax(mu, sq.squareMass, GRAVITATIONAL_FORCE);
+    std::cout << "Friction Max: " << frictionMax;
+    std::cout << " Newtons" << std::endl;
+
+    // force applied to square
+    std::cout << "Enter force applied to block (N): ";
+    std::cin >> sq.forceApplied;
+
+    bool forceHasBeenApplied = false;
 
     sq.squareVelocity = 0.0f;
     sq.squareXPos = SQUARE_XPOS;
@@ -62,16 +75,16 @@ int main(void)
         float deltaTime = 1.0f / 60.0f;
         double acceleration;
 
-        if (sq.squareVelocity > 0) {
-            sq.forceApplied = 0;
+        if (!forceHasBeenApplied) {
+            if (fabs(sq.forceApplied) > frictionMax) {
+                sq.squareVelocity = sq.forceApplied / sq.squareMass;
+            } else {
+                sq.squareVelocity = 0;
+            }
+            forceHasBeenApplied = true;
         }
 
-        double maxFriction = mu * (sq.squareMass * GRAVITATIONAL_FORCE);
-        if (fabs(sq.forceApplied) <= maxFriction && sq.squareVelocity == 0) {
-            acceleration = 0;
-        } else {
-            acceleration = calculateAcceleration(sq.forceApplied, mu, sq.squareMass, sq.squareVelocity, GRAVITATIONAL_FORCE);
-        }
+        acceleration = calculateAcceleration(0, sq.squareMass, sq.squareVelocity, frictionMax);
 
         if (sq.squareVelocity > 0 && acceleration < 0) {
             if (sq.squareVelocity + acceleration * deltaTime < 0) {
@@ -83,11 +96,17 @@ int main(void)
         sq.squareVelocity += acceleration * deltaTime;
         sq.squareXPos += sq.squareVelocity * deltaTime;
 
+        float currentDisplacement = calculateDisplacement(sq.squareXPos);
+
         renderBackground(renderer);
 
         renderSurface(renderer);
 
         renderSquare(renderer, sq.squareXPos);
+
+        renderAccelerationText(renderer, acceleration);
+        renderVelocityText(renderer, sq.squareVelocity);
+        renderDisplacementText(renderer, currentDisplacement);
 
         SDL_RenderPresent(renderer);
 
@@ -143,19 +162,43 @@ void renderSquare(SDL_Renderer* renderer, float xPosition) {
     SDL_RenderFillRect(renderer, &block);
 }
 
-double calculateAcceleration(float forceApplied, double mu, float squareMass, float squareVelocity, float gravitationalForce) {
-    double friction = mu * squareMass * gravitationalForce;
-
+double calculateAcceleration(float forceApplied, float squareMass, float squareVelocity, float frictionMax) {
     if (squareVelocity > 0) {
-        friction = -friction;
+        frictionMax = -frictionMax;
     } else if (squareVelocity < 0) {
-        friction = friction;
+        frictionMax = frictionMax;
     } else {
-        friction = (forceApplied > 0) ? -friction : friction;
+        frictionMax = 0;
     }
 
-    double netForce = forceApplied + friction;
+    double netForce = forceApplied + frictionMax;
     double acceleration = netForce / squareMass;
 
     return acceleration;
 }
+
+float calculateDisplacement(float xPosition) {
+    float displacement = xPosition - SQUARE_XPOS;
+    return displacement;
+}
+
+double calculateFrictionMax(double mu, float squareMass, float gravitationalForce) {
+    double frictionMax = mu * squareMass * gravitationalForce;
+    return frictionMax;
+}
+
+void renderAccelerationText(SDL_Renderer* renderer, double acceleration) {
+    SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255);
+    SDL_RenderDebugTextFormat(renderer, 1.0f, 1.0f, "Acceleration: %.2f m/s^2", acceleration);
+}
+
+void renderVelocityText(SDL_Renderer* renderer, float velocity) {
+    SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255);
+    SDL_RenderDebugTextFormat(renderer, 1.0f, 10.0f, "Velocity: %.2f m/s", velocity);
+}
+
+void renderDisplacementText(SDL_Renderer* renderer, float displacement) {
+    SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255);
+    SDL_RenderDebugTextFormat(renderer, 1.0f, 20.0f, "Displacement: %.2f m", displacement);
+}
+
