@@ -1,8 +1,8 @@
 CC = c++
-CFLAGS = -std=c++17 -Wall -Wextra $(pkgconfig --include SDL3)
-LDFLAGS = -lSDL3
+CFLAGS = -std=c++17 -Wall -Wextra $(shell pkg-config --cflags sdl3)
+LDFLAGS = $(shell pkg-config --libs sdl3)
 
-SRC = *.cpp
+SRC = $(wildcard *.cpp)
 OUT = ForceFlowFrictionSim
 
 all: build
