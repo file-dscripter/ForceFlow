@@ -1,5 +1,5 @@
-CC = g++
-CFLAGS = -std=c++17 -Wall -Wextra -I/usr/include/SDL3
+CC = c++
+CFLAGS = -std=c++17 -Wall -Wextra $(pkgconfig --include SDL3)
 LDFLAGS = -lSDL3
 
 SRC = *.cpp
