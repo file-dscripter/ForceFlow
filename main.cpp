@@ -2,9 +2,11 @@
 #include <cmath>
 
 #include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
 
-#include "constants.h"
+#include "SURFACE.h"
+#include "ENVIRONMENT.h"
+#include "SQUARE.h"
+#include "WINDOW.h"
 
 struct square {
     float squareXPos;

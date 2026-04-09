@@ -14,4 +14,4 @@ clean:
 	rm -f $(OUT)
 
 run:
-	./$(OUT)
+	clear && ./$(OUT)
